@@ -1,5 +1,26 @@
 // app.js
+// Import the functions you need from the SDKs you need
 
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCXjGVxLAweg3iZYuhLsmNsmYidRNKBzgw",
+  authDomain: "tig-algebra-options-data.firebaseapp.com",
+  projectId: "tig-algebra-options-data",
+  storageBucket: "tig-algebra-options-data.firebasestorage.app",
+  messagingSenderId: "104889443005",
+  appId: "1:104889443005:web:d29e860ba55de332378dd4",
+  measurementId: "G-5KES7VC65J"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const sessionID = Date.now().toString() + Math.floor(Math.random() * 1000).toString();
+console.log("Session ID:", sessionID);
 // Get references to HTML elements
 const questionTextElement = document.getElementById('question-text');
 const optionsContainerElement = document.getElementById('options-container');
@@ -210,7 +231,34 @@ function displayNewQuestion() {
     questionStartTime = performance.now();
     console.log("displayNewQuestion finished.");
 }
+// --- NEW DATABASE FUNCTION ---
 
+/**
+ * Logs the result of an answer to the Firestore database.
+ * @param {boolean} isCorrect - Was the answer correct?
+ * @param {number} level - The difficulty level of the question.
+ * @param {number} responseTimeMs - How long the user took to answer (in ms).
+ */
+function logAnswerToDatabase(isCorrect, level, responseTimeMs) {
+    // Create a new "log" object with all the data
+    const logEntry = {
+        sessionID: sessionID,
+        level: level,
+        isCorrect: isCorrect,
+        responseTime: responseTimeMs,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp() // Asks Firebase for the current time
+    };
+
+    // Send it to the database
+    // We'll create a "collection" (like a table) called "answers"
+    db.collection("answers").add(logEntry)
+        .then(() => {
+            console.log("Answer logged successfully!");
+        })
+        .catch((error) => {
+            console.error("Error logging answer: ", error);
+        });
+}
 
 /** Handles user's answer selection */
 function handleAnswer(clickedButton, selectedOption) {
@@ -235,6 +283,7 @@ function handleAnswer(clickedButton, selectedOption) {
             console.log("Slow correct answer.");
         }
         player.skillLevel += skillChange;
+		logAnswerToDatabase(true, player.currentDifficultyLevel, responseTime);
         console.log(`Correct! Score: ${player.score}, Skill: ${player.skillLevel} (+${skillChange})`);
     } else {
         feedbackMessageElement.innerHTML = `Wrong! Correct: ${currentQuestion.correctAnswer}`;
@@ -380,3 +429,7 @@ console.log("Initial call to displayNewQuestion.");
 populateLevelSelector(); // Fill the dropdown
 populateLevelList(); // <-- ADD THIS LINE
 displayNewQuestion();
+
+// ... (your setDifficultyLevel function) ...
+
+
