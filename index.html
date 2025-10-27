@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Demo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+
+        <div id="level-selector-container">
+            <label for="level-select">Choose Level:</label>
+            <select id="level-select">
+                </select>
+            <button id="jump-to-level-btn">Go</button>
+			<button id="show-levels-btn">View Levels</button>
+        </div>
+        <div id="player-stats">
+            <span id="score-display">Score: 0</span> | <span id="health-display">Health: 100%</span>
+        </div>
+
+        <p id="question-text">Loading question...</p>
+        <div id="options-container">
+        </div>
+       
+        <p id="feedback-message"></p>
+    </div>
+    <div id="level-list-modal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close-btn">&times;</span>
+        <h2>Level List & Skills</h2>
+        <div id="level-list-content">
+            </div>
+    </div>
+</div>
+    <script src="questionGenerator.js" defer></script>
+    <script src="app.js" defer></script>
+</body>
+</html>
