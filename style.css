@@ -49,6 +49,7 @@ body {
     color: #a2d2ff; /* Lighter blue for question */
     min-height: 40px; /* Give it some space even when loading */
     line-height: 1.5; /* Adjust line height for fractions */
+	word-break: break-word; /
 }
 
 /* Options container layout */
@@ -275,4 +276,48 @@ sup {
     color: #a2d2ff; /* Light blue for level number */
     display: inline-block;
     width: 80px; /* Align skills */
+}
+/* --- MEDIA QUERIES FOR RESPONSIVENESS --- */
+
+@media (max-width: 600px) {
+    /* Make container padding slightly smaller on phones */
+    #game-container {
+        padding: 20px 15px;
+    }
+
+    /* Reduce question font size */
+    #question-text {
+        font-size: 1.5em; /* Smaller font for small screens */
+        line-height: 1.4; /* Adjust line height */
+    }
+
+    /* * This is the main fix:
+     * Stack option buttons vertically on small screens
+     */
+    #options-container {
+        grid-template-columns: 1fr; /* One column, full width */
+        gap: 12px; /* Slightly smaller gap */
+    }
+
+    /* Adjust button font size for better fit */
+    .option-button {
+        font-size: 1.0em; /* Slightly smaller font */
+        padding: 12px 10px; /* Adjust padding */
+    }
+
+    /* Adjust level selector for better stacking */
+    #level-selector-container {
+        gap: 8px;
+    }
+
+    #level-selector-container label {
+        font-size: 1.0em;
+    }
+
+    /* Make modal take up more of the screen */
+    .modal-content {
+        width: 90%;
+        margin: 15% auto;
+        padding: 20px 20px;
+    }
 }

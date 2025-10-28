@@ -54,29 +54,29 @@ const MAX_IMPLEMENTED_LEVEL = 63; // The highest level we have implemented
 // --- LEVEL DESCRIPTIONS ---
 // --- LEVEL DESCRIPTIONS ---
 const LEVEL_DESCRIPTIONS = [
-    "1-12: Combining Like Terms (ax + bx)",
-    "13-14: Combining Terms & Constants (ax + b + cx)",
-    "15-16: Combining Terms with Exponents (ax<sup>n</sup> + bx<sup>m</sup>)",
-    "17-19: Combining Multi-Variable Terms (ax + by + cx)",
-    "20-21: Multiplication (a &times; bx)",
-    "22-25: Multiplication with Exponents (ax<sup>n</sup> &times; bx<sup>m</sup>)",
-    "26-27: Simple Division (ax / b)",
-    "28-30: Division with Exponents (ax<sup>n</sup> / bx<sup>m</sup>)",
-    "31-34: Power Rules ( (ax<sup>n</sup>)<sup>m</sup> )",
-    "35-37: Combined Operations (Multiplication & Division)",
-    "38-40: Distributive Property ( a(bx+c) )",
-    "41-44: Distributive Property ( ax<sup>n</sup>(bx<sup>m</sup>+c) )",
-    "45-47: Advanced Multiplication ( ax<sup>n</sup> &times; by<sup>m</sup> &times; cx<sup>k</sup> )",
-    "48: Difference of Squares ( (x+a)(x-a) )",
-    "49-51: Square of a Sum/Difference ( (x &pm; a)<sup>2</sup> )",
-    "52: Difference of Squares ( (ax+b)(ax-b) )",
-    "53-55: Square of a Sum/Difference ( (ax &pm; b)<sup>2</sup> )",
-    "56: General Binomial Multiplication ( (ax+b)(cx+d) )",
-    "57: Simple Polynomial Division ( (ax+b) / c )",
-    "58: Polynomial / Monomial Division ( (ax<sup>k</sup>+bx<sup>m</sup>) / cx<sup>n</sup> )",
-    "59: Factoring ( (x<sup>2</sup> - a<sup>2</sup>) / (x &pm; a) )",
-    "60-61: Factoring ( (nx<sup>2</sup> &pm; ...) / (x &pm; a) )",
-    "62-63: Factoring ( n(ax+b)(cx+d) / ... )"
+    "1-12: Combining Like Terms<br>ax + bx",
+    "13-14: Combining Terms & Constants<br> ax + b + cx",
+    "15-16: Combining Terms with Exponents<br> ax<sup>n</sup> + bx<sup>m</sup>",
+    "17-19: Combining Multi-Variable Terms<br> ax + by + cx",
+    "20-21: Multiplication<br> a &times; bx",
+    "22-25: Multiplication with Exponents<br> ax<sup>n</sup> &times; bx<sup>m</sup>",
+    "26-27: Simple Division<br> ax / b",
+    "28-30: Division with Exponents<br>ax<sup>n</sup> / bx<sup>m</sup>",
+    "31-34: Power Rules<br>(ax<sup>n</sup>)<sup>m</sup> ",
+    "35-37: Combined Operations<br>Multiplication & Division",
+    "38-40: Distributive Property<br>a(bx+c) ",
+    "41-44: Distributive Property<br> ax<sup>n</sup>(bx<sup>m</sup>+c) ",
+    "45-47: Advanced Multiplication<br>ax<sup>n</sup> &times; by<sup>m</sup> &times; cx<sup>k</sup>",
+    "48: Difference of Squares<br>(x+a)(x-a)",
+    "49-51: Square of a Sum/Difference <br>(x &pm; a)<sup>2</sup>",
+    "52: Difference of Squares<br>(ax+b)(ax-b)",
+    "53-55: Square of a Sum/Difference<br> (ax &pm; b)<sup>2</sup> ",
+    "56: General Binomial Multiplication<br>(ax+b)(cx+d)",
+    "57: Simple Polynomial Division<br> (ax+b )/ c",
+    "58: Polynomial / Monomial Division<br> (ax<sup>k</sup>+bx<sup>m</sup>) / cx<sup>n</sup>",
+    "59: Factoring<br> (x<sup>2</sup> - a<sup>2</sup>) / (x &pm; a)",
+    "60-61: Factoring<br> (ax<sup>2</sup> &pm;2abx+b<sup>2</sup>) / (x &pm; 1/b)",
+    "62-63: Factoring<br>n(ax+b)(cx+d) /(ex+f)"
 ];
 /** Updates player stats display */
 function updatePlayerStatsDisplay() {
@@ -314,7 +314,7 @@ function handleAnswer(clickedButton, selectedOption) {
 /** Populates the level selector dropdown */
 function populateLevelSelector() {
     if (!levelSelectElement) return;
-
+	levelSelectElement.innerHTML = '';
     for (let i = 1; i <= MAX_IMPLEMENTED_LEVEL; i++) {
         const option = document.createElement('option');
         option.value = i;

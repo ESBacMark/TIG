@@ -130,21 +130,91 @@ function generateDistractors_Multiplication(correctResult, variable, difficultyL
     while(fO.length<4){ let rC=coeff+(Math.floor(Math.random()*5)-2); let rE=exp+(Math.floor(Math.random()*3)-1); if(rE<1)rE=1; let rO=formatTerm(rC,variable,rE); if(rO===""&&rC===0)rO=formatTerm(1,variable,rE||1); if(rO==="")rO="x"; if(rO&&!fO.includes(rO)){fO.push(rO);}else{rO=`${rC}`; if(rO!=="0"&&!fO.includes(rO))fO.push(rO);} }
     while(fO.length>4){ const i=Math.floor(Math.random()*fO.length); if(fO[i]!==cA)fO.splice(i,1); } while(fO.length<4)fO.push(`${fO.length}x<sup>${exp}</sup>`); return fO.sort(()=>Math.random()-0.5);
 }
-/** Distractor generator for DIVISION answers */
+/**
+ * Distractor generator for DIVISION answers
+ * (UPDATED to remove fraction distractors from Level 29)
+ */
 function generateDistractors_Division(correctResult, variable, level) {
-    const { coeff, exp } = correctResult; let correctAnswer = ''; let correctIsFraction = (level === 30 && exp < 0);
-    if (correctIsFraction) { correctAnswer = formatFractionHTML(formatConstant(coeff), formatTerm(1, variable, -exp)); } else { correctAnswer = formatTerm(coeff, variable, exp); } if (correctAnswer === "") correctAnswer = "0";
-    let d = new Set(); d.add(correctAnswer);
-    const formatDistractor = (dCoeff, dExp) => { if (level === 30 && dExp < 0) { if (dCoeff === 0) return "0"; return formatFractionHTML(formatConstant(dCoeff), formatTerm(1, variable, -dExp)); } else { let term = formatTerm(dCoeff, variable, dExp); return term === "" ? "0" : term; } };
-    d.add(formatDistractor(coeff + 1, exp)); d.add(formatDistractor(coeff - 1, exp)); d.add(formatDistractor(coeff, exp + 1)); if (exp !== 1) d.add(formatDistractor(coeff, exp - 1)); d.add(formatDistractor(-coeff, exp));
-    if ((level === 28 || level === 29) && exp < 0) { if(coeff !== 0) { d.add(formatFractionHTML(formatConstant(coeff), formatTerm(1, variable, -exp))); } }
+    const { coeff, exp } = correctResult; 
+    let correctAnswer = ''; 
+    let correctIsFraction = (level === 30 && exp < 0);
+    
+    // For Level 30, the correct answer IS a fraction.
+    if (correctIsFraction) { 
+        correctAnswer = formatFractionHTML(formatConstant(coeff), formatTerm(1, variable, -exp)); 
+    } 
+    // For all other levels (like 29), it's just a term.
+    else { 
+        correctAnswer = formatTerm(coeff, variable, exp); 
+    } 
+    
+    if (correctAnswer === "") correctAnswer = "0";
+    
+    let d = new Set(); 
+    d.add(correctAnswer);
+
+    // This helper function correctly formats distractors based on the level.
+    // It will *only* create fractions for Level 30.
+    const formatDistractor = (dCoeff, dExp) => { 
+        if (level === 30 && dExp < 0) { 
+            if (dCoeff === 0) return "0"; 
+            return formatFractionHTML(formatConstant(dCoeff), formatTerm(1, variable, -dExp)); 
+        } else { 
+            let term = formatTerm(dCoeff, variable, dExp); 
+            return term === "" ? "0" : term; 
+        } 
+    };
+
+    // Add standard distractors
+    d.add(formatDistractor(coeff + 1, exp)); 
+    d.add(formatDistractor(coeff - 1, exp)); 
+    d.add(formatDistractor(coeff, exp + 1)); 
+    if (exp !== 1) d.add(formatDistractor(coeff, exp - 1)); 
+    d.add(formatDistractor(-coeff, exp));
+
+    // --- REMOVED BLOCK ---
+    // The following 'if' block was the problem. It has been removed.
+    // if ((level === 28 || level === 29) && exp < 0) { 
+    //     if(coeff !== 0) { 
+    //         d.add(formatFractionHTML(formatConstant(coeff), formatTerm(1, variable, -exp))); 
+    //     } 
+    // }
+    // --- END REMOVED BLOCK ---
+
     if (exp !== 0 && coeff !== 0) d.add(formatConstant(coeff));
-    let fO = Array.from(d).filter(opt => opt !== '' && opt !== null); fO = fO.filter(opt => opt !== "0" || correctAnswer === "0"); fO = Array.from(new Set(fO));
-    let maxTries = 10; while (fO.length < 4 && maxTries > 0) { let rC=coeff+(Math.floor(Math.random()*5)-2); let rE=exp+(Math.floor(Math.random()*3)-1); if(rE===0&&exp!==0)rE=exp>0?1:-1; let rO=formatDistractor(rC,rE); if(rO===""&&rC===0)rO="0"; else if(rO==="")rO=formatTerm(1,variable,1); if(rO&&rO!=="0"&&!fO.includes(rO)){fO.push(rO);} maxTries--; }
-    while(fO.length>4){ const i=Math.floor(Math.random()*fO.length); if(fO[i]!==correctAnswer)fO.splice(i,1); }
-    while(fO.length<4){ let fallback; if(correctIsFraction)fallback=formatFractionHTML(`${fO.length+coeff+1}`,`${variable}<sup>${-exp+fO.length}</sup>`); else fallback=formatTerm(fO.length+coeff+1,variable,exp+fO.length); if(!fO.includes(fallback))fO.push(fallback); else fO.push(`Option ${fO.length+1}`); }
+    
+    let fO = Array.from(d).filter(opt => opt !== '' && opt !== null); 
+    fO = fO.filter(opt => opt !== "0" || correctAnswer === "0"); 
+    fO = Array.from(new Set(fO));
+    
+    let maxTries = 10; 
+    while (fO.length < 4 && maxTries > 0) { 
+        let rC=coeff+(Math.floor(Math.random()*5)-2); 
+        let rE=exp+(Math.floor(Math.random()*3)-1); 
+        if(rE===0&&exp!==0)rE=exp>0?1:-1; 
+        let rO=formatDistractor(rC,rE); 
+        if(rO===""&&rC===0)rO="0"; 
+        else if(rO==="")rO=formatTerm(1,variable,1); 
+        if(rO&&rO!=="0"&&!fO.includes(rO)){fO.push(rO);} 
+        maxTries--; 
+    }
+    
+    while(fO.length>4){ 
+        const i=Math.floor(Math.random()*fO.length); 
+        if(fO[i]!==correctAnswer)fO.splice(i,1); 
+    }
+    
+    while(fO.length<4){ 
+        let fallback; 
+        if(correctIsFraction)fallback=formatFractionHTML(`${fO.length+coeff+1}`,`${variable}<sup>${-exp+fO.length}</sup>`); 
+        else fallback=formatTerm(fO.length+coeff+1,variable,exp+fO.length); 
+        if(!fO.includes(fallback))fO.push(fallback); 
+        else fO.push(`Option ${fO.length+1}`); 
+    }
+    
     return fO.sort(()=>Math.random()-0.5);
 }
+
 /**
  * Distractor generator for POWER rule with base coefficient 1 (e.g., "(x<sup>3</sup>)<sup>2</sup>").
  * **CORRECTED TRIM LOGIC**
