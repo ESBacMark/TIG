@@ -37,9 +37,14 @@ const enemyCharacter = document.getElementById('enemy-character');
 const playerProjectile = document.getElementById('player-projectile');
 const enemyProjectile = document.getElementById('enemy-projectile');
 const playAgainBtn = document.getElementById('play-again-btn');
+const mapPlayerMarkerElement = document.getElementById('map-player-marker'); // Reference for the owl
+const mapBwOverlayElement = document.getElementById('map-bw-overlay');
+const mapViewportElement = document.getElementById('map-viewport'); // Reference to the map's container
 let currentQuestion = null;
 let questionStartTime = 0; // To store the timestamp when question appears
-
+const MAP_PROGRESS_UNIT_PX = 100; // How many pixels player moves forward with each "win"
+const MAP_PROGRESS_STEP_PX = 20; // Owl moves 20px per win
+const MAP_MAX_PROGRESS_PX = 800; // Define max progress before "new world" (e.g., 800px)
 // Player State
 const player = {
     score: 0,
@@ -47,7 +52,9 @@ const player = {
     skillLevel: 1,
     maxHealth: 100,
     currentDifficultyLevel: 1,
-	position: 15
+	position: 15,
+	maxLevelConquered: 0,
+	mapProgress: 0
 };
 // --- ADD THESE NEW VARIABLES ---
 const enemy = {
@@ -62,6 +69,7 @@ const scorePerCorrect = 10;
 const healthLossPerIncorrect = 20;
 const FAST_THRESHOLD_MS = 3000; // Time limit for "Fast" answer in milliseconds
 const MAX_IMPLEMENTED_LEVEL = 63; // The highest level we have implemented
+
 
 // --- LEVEL DESCRIPTIONS ---
 const LEVEL_DESCRIPTIONS = [
@@ -169,7 +177,7 @@ function checkPositionalGameOver() {
     }
 }
  
-/** Replaces your old gameOver() function */
+/** Handles game over conditions (win or loss) */
 function triggerGameOver(playerWins) {
     // Disable all option buttons
     Array.from(optionsContainerElement.children).forEach(button => {
@@ -181,40 +189,93 @@ function triggerGameOver(playerWins) {
         feedbackMessageElement.style.color = '#2ecc71';
         questionTextElement.innerHTML = "Victory!";
         enemyCharacter.style.opacity = 0; // Fade out enemy
+        
+        player.mapProgress += MAP_PROGRESS_STEP_PX; // Advance map progress
+        updateMapVisuals(); // Update map to show progress
+        playAgainBtn.textContent = 'Continue Journey'; // Specific text for winning
     } else {
         feedbackMessageElement.innerHTML = `Game Over! Final score: ${player.score}`;
         feedbackMessageElement.style.color = 'white';
         questionTextElement.innerHTML = "Defeated!";
         playerCharacter.style.opacity = 0; // Fade out player
+        playAgainBtn.textContent = 'Retry Battle'; // Specific text for losing
     }
-	playAgainBtn.classList.remove('hidden'); // Show the button
+ 
+    playAgainBtn.classList.remove('hidden'); // Show the button
+}
+/** Prepares for the next battle or allows retrying the current one */
+function startNextBattle() {
+    isGameOver = false; // Clear game over state
+    enemy.position = 15;
+	player.position = 15;
+    // Reset battle zone characters
+    playerCharacter.style.left = '15%';
+    playerCharacter.style.opacity = 1;
+    enemyCharacter.style.right = '15%';
+    enemyCharacter.style.opacity = 1;
+    
+    player.health = player.maxHealth; // Restore player health for next battle
+    updatePlayerStatsDisplay();
+
+    playAgainBtn.classList.add('hidden'); // Hide the button
+    feedbackMessageElement.innerHTML = ''; // Clear feedback
+    
+    displayNewQuestion(); // Start a new question sequence
 }
 /** Resets the entire game to its initial state */
-function resetGame() {
+function startNewGame() {
     // Reset game state
     player.score = 0;
     player.health = 100;
     player.skillLevel = 1;
     player.position = 15;
+    player.maxLevelConquered = 0;
+    player.mapProgress = 0; // Reset map progress
     enemy.position = 15;
     isGameOver = false;
 
     // Reset UI
     playAgainBtn.classList.add('hidden');
     feedbackMessageElement.innerHTML = '';
-    
-    // Reset character visuals (position and opacity)
+
+    // Reset character visuals
     playerCharacter.style.left = '15%';
     playerCharacter.style.opacity = 1;
     enemyCharacter.style.right = '15%';
     enemyCharacter.style.opacity = 1;
 
+    // Reset the map scroll position
+    if(mapPlayerMarkerElement) mapPlayerMarkerElement.style.left = '0px'; // Owl starts at 0
+    if(mapBwOverlayElement) mapBwOverlayElement.style.transform = `translateX(0px)`; // Overlay starts fully left
+    // Reset the B&W overlay to cover the left half
+    if(mapBwOverlayElement) mapBwOverlayElement.style.width = '100%'; 
+
     // Update displays
     updatePlayerStatsDisplay();
-    
+	// --- Call updateMapVisuals to ensure everything is set ---
+    updateMapVisuals();
+
     // Start the game
     displayNewQuestion();
 }
+/** Updates the map's visual elements: owl position and B&W overlay */
+function updateMapVisuals() {
+    if (!mapPlayerMarkerElement || !mapBwOverlayElement || !mapViewportElement) return;
+
+    // Ensure mapProgress doesn't exceed the maximum "viewable" progress
+    // This will allow for the "new world" concept later.
+    player.mapProgress = Math.min(player.mapProgress, MAP_MAX_PROGRESS_PX);
+
+    // 1. Move the Player Marker (Owl)
+    mapPlayerMarkerElement.style.left = `${player.mapProgress}px`;
+
+    // 2. Adjust the B&W Overlay (its left edge moves with the owl)
+    // The overlay's left edge will match the owl's current position (player.mapProgress)
+    // Its right edge is fixed at the right of the viewport.
+    // So, the overlay itself effectively gets "pushed" to the right by the owl.
+    mapBwOverlayElement.style.transform = `translateX(${player.mapProgress}px)`;
+}
+
 /** Updates player stats display */
 function updatePlayerStatsDisplay() {
     scoreDisplayElement.textContent = `Score: ${player.score}`;
@@ -265,7 +326,6 @@ function adjustDifficulty() {
     else if (player.skillLevel <= 56) { player.currentDifficultyLevel = 28; maxCoeff = 10; } // Skill 55-56 -> Level 28
     else if (player.skillLevel <= 58) { player.currentDifficultyLevel = 29; maxCoeff = 10; } // Skill 57-58 -> Level 29
     else if (player.skillLevel <= 60) { player.currentDifficultyLevel = 30; maxCoeff = 10; } // Skill 59-60 -> Level 30
-    // Levels 31-37
     else if (player.skillLevel <= 62) { player.currentDifficultyLevel = 31; maxCoeff = 5; } // Skill 61-62 -> Level 31
     else if (player.skillLevel <= 64) { player.currentDifficultyLevel = 32; maxCoeff = 5; minCoeff = 2; } // Skill 63-64 -> Level 32
     else if (player.skillLevel <= 66) { player.currentDifficultyLevel = 33; maxCoeff = 5; minCoeff = 2; } // Skill 65-66 -> Level 33
@@ -427,7 +487,6 @@ function handleAnswer(clickedButton, selectedOption) {
         player.skillLevel += skillChange;
         logAnswerToDatabase(true, player.currentDifficultyLevel, responseTime);
         console.log(`Correct! Score: ${player.score}, Skill: ${player.skillLevel} (+${skillChange})`);
-
         // --- BATTLE LOGIC ---
         triggerShoot('player', currentQuestion.correctAnswer);
         setTimeout(() => {
@@ -495,6 +554,7 @@ function handleLevelJump() {
 
     console.log(`User manually jumping to level: ${selectedLevel}`);
     setDifficultyLevel(selectedLevel);
+
 }
 
 
@@ -583,9 +643,10 @@ console.log("Initial call to displayNewQuestion.");
 populateLevelSelector(); // Fill the dropdown
 populateLevelList(); // 
 displayNewQuestion();
-playAgainBtn.addEventListener('click', resetGame);
+
+playAgainBtn.addEventListener('click', startNextBattle);
 levelSelectElement.addEventListener('change', handleLevelJump);
-resetGame();
+startNewGame();
 // ... (your setDifficultyLevel function) ...
 
 

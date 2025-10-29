@@ -10,6 +10,16 @@
 	<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <div id="game-container">
+		<div id="map-container">
+            <div id="map-label">World Progression</div>
+            <div id="map-viewport">
+                <div id="map-strip"></div>
+                
+                <div id="map-bw-overlay"></div>
+                
+                <div id="map-player-marker"></div>
+            </div>
+        </div>
 		<div id="battle-zone">
             <div id="player-character"></div>
             <div class="projectile" id="player-projectile"></div>
@@ -27,12 +37,9 @@
         </div>
 
         <p id="question-text">Loading question...</p>
-        <div id="options-container">
-        </div>
-       
-        <p id="feedback-message"></p>
-		        
-        <button id="play-again-btn" class="hidden">Play Again</button>
+        <div id="options-container"></div>
+        <button id="play-again-btn" class="hidden">Continue</button>
+		<p id="feedback-message"></p>
     </div>
     </div>
     <div id="level-list-modal" class="modal">
