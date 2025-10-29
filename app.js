@@ -36,7 +36,8 @@ const playerCharacter = document.getElementById('player-character');
 const enemyCharacter = document.getElementById('enemy-character');
 const playerProjectile = document.getElementById('player-projectile');
 const enemyProjectile = document.getElementById('enemy-projectile');
-const playAgainBtn = document.getElementById('play-again-btn');
+const mapModal = document.getElementById('map-modal');
+const startBattleBtn = document.getElementById('start-battle-btn');
 const mapPlayerMarkerElement = document.getElementById('map-player-marker'); // Reference for the owl
 const mapBwOverlayElement = document.getElementById('map-bw-overlay');
 const mapViewportElement = document.getElementById('map-viewport'); // Reference to the map's container
@@ -179,50 +180,64 @@ function checkPositionalGameOver() {
  
 /** Handles game over conditions (win or loss) */
 function triggerGameOver(playerWins) {
+    isGameOver = true; // Set flag
+    
     // Disable all option buttons
     Array.from(optionsContainerElement.children).forEach(button => {
         button.disabled = true;
     });
  
     if (playerWins) {
-        feedbackMessageElement.innerHTML = `You Win! Final score: ${player.score}`;
+        feedbackMessageElement.innerHTML = `You Win!`;
         feedbackMessageElement.style.color = '#2ecc71';
         questionTextElement.innerHTML = "Victory!";
-        enemyCharacter.style.opacity = 0; // Fade out enemy
+        enemyCharacter.style.opacity = 0; 
         
-        player.mapProgress += MAP_PROGRESS_STEP_PX; // Advance map progress
-        updateMapVisuals(); // Update map to show progress
-        playAgainBtn.textContent = 'Continue Journey'; // Specific text for winning
+        // --- THIS IS THE CHANGE ---
+        // 1. We update the progress data...
+        player.mapProgress += MAP_PROGRESS_STEP_PX; 
+        startBattleBtn.textContent = 'Continue Journey';
+        // 2. ...but we DO NOT call updateMapVisuals() here anymore.
+        // --- END OF CHANGE ---
+
     } else {
-        feedbackMessageElement.innerHTML = `Game Over! Final score: ${player.score}`;
+        feedbackMessageElement.innerHTML = `Game Over!`;
         feedbackMessageElement.style.color = 'white';
         questionTextElement.innerHTML = "Defeated!";
-        playerCharacter.style.opacity = 0; // Fade out player
-        playAgainBtn.textContent = 'Retry Battle'; // Specific text for losing
+        playerCharacter.style.opacity = 0; 
+        startBattleBtn.textContent = 'Retry Battle';
     }
  
-    playAgainBtn.classList.remove('hidden'); // Show the button
+    // Wait 0.1 seconds, then show the map
+    // --- THIS IS THE CHANGE ---
+    // We now pass the 'playerWins' status to the showMapModal function.
+    setTimeout(() => {
+        showMapModal(playerWins); 
+    }, 100); // 0.1-second delay
 }
 /** Prepares for the next battle or allows retrying the current one */
 function startNextBattle() {
-    isGameOver = false; // Clear game over state
-    enemy.position = 15;
-	player.position = 15;
-    // Reset battle zone characters
+    isGameOver = false; 
+
+    // Reset battle zone characters and positions
+    player.position = 15; // Reset player data position
+    enemy.position = 15; // Reset enemy data position
     playerCharacter.style.left = '15%';
     playerCharacter.style.opacity = 1;
     enemyCharacter.style.right = '15%';
     enemyCharacter.style.opacity = 1;
-    
-    player.health = player.maxHealth; // Restore player health for next battle
+
+    player.health = player.maxHealth; 
     updatePlayerStatsDisplay();
 
-    playAgainBtn.classList.add('hidden'); // Hide the button
-    feedbackMessageElement.innerHTML = ''; // Clear feedback
-    
-    displayNewQuestion(); // Start a new question sequence
+    feedbackMessageElement.innerHTML = ''; 
+    questionTextElement.innerHTML = "Loading question..."; 
+
+    // Hide the map and start the battle
+    hideMapModal();
+    displayNewQuestion(); 
 }
-/** Resets the entire game to its initial state */
+/** Resets the entire game to its initial state for a new game */
 function startNewGame() {
     // Reset game state
     player.score = 0;
@@ -230,33 +245,19 @@ function startNewGame() {
     player.skillLevel = 1;
     player.position = 15;
     player.maxLevelConquered = 0;
-    player.mapProgress = 0; // Reset map progress
+    player.mapProgress = 0;
     enemy.position = 15;
     isGameOver = false;
 
     // Reset UI
-    playAgainBtn.classList.add('hidden');
     feedbackMessageElement.innerHTML = '';
+    startBattleBtn.textContent = 'Start First Battle'; // Set button text
 
-    // Reset character visuals
-    playerCharacter.style.left = '15%';
-    playerCharacter.style.opacity = 1;
-    enemyCharacter.style.right = '15%';
-    enemyCharacter.style.opacity = 1;
+    // Reset Map visuals
+    updateMapVisuals(); 
 
-    // Reset the map scroll position
-    if(mapPlayerMarkerElement) mapPlayerMarkerElement.style.left = '0px'; // Owl starts at 0
-    if(mapBwOverlayElement) mapBwOverlayElement.style.transform = `translateX(0px)`; // Overlay starts fully left
-    // Reset the B&W overlay to cover the left half
-    if(mapBwOverlayElement) mapBwOverlayElement.style.width = '100%'; 
-
-    // Update displays
-    updatePlayerStatsDisplay();
-	// --- Call updateMapVisuals to ensure everything is set ---
-    updateMapVisuals();
-
-    // Start the game
-    displayNewQuestion();
+    // Show the map modal to start the game
+    showMapModal();
 }
 /** Updates the map's visual elements: owl position and B&W overlay */
 function updateMapVisuals() {
@@ -615,7 +616,33 @@ function populateLevelList() {
         levelListContent.appendChild(p);
     });
 }
+/** Shows the map modal and updates visuals */
+function showMapModal(didPlayerWin = false) { // <-- Added argument
+    if (mapModal) {
+        
+        // Show the modal *before* triggering the animation
+        mapModal.style.display = "block"; 
 
+        if (didPlayerWin) {
+            // --- THIS IS THE NEW LOGIC ---
+            // If the player won, we wait 50ms for the modal to
+            // finish appearing on screen.
+            // THEN we call updateMapVisuals(), which triggers
+            // the CSS transition to move the owl and overlay.
+            setTimeout(() => {
+                updateMapVisuals(); 
+            }, 50); // 50ms delay is enough
+        } else {
+            // If the player lost (or it's the start of the game),
+            // just update the map to its current state.
+            updateMapVisuals(); 
+        }
+    }
+}
+/** Hides the map modal */
+function hideMapModal() {
+    if (mapModal) mapModal.style.display = "none";
+}
 /** Shows the level list modal */
 function showModal() {
     if (levelListModal) levelListModal.style.display = "block";
@@ -638,16 +665,13 @@ window.addEventListener('click', (event) => {
 });
 
 // --- INITIALIZATION ---
-updatePlayerStatsDisplay();
-console.log("Initial call to displayNewQuestion.");
-populateLevelSelector(); // Fill the dropdown
-populateLevelList(); // 
-displayNewQuestion();
+populateLevelSelector();
+populateLevelList();
 
-playAgainBtn.addEventListener('click', startNextBattle);
+// Listen for click on the new button in the map modal
+startBattleBtn.addEventListener('click', startNextBattle);
+
 levelSelectElement.addEventListener('change', handleLevelJump);
+
+// Start a brand new game (which will show the map modal)
 startNewGame();
-// ... (your setDifficultyLevel function) ...
-
-
-

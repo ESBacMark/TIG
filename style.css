@@ -369,7 +369,7 @@ sup {
     border: 1px solid #3498db;
     border-radius: 10px;
     width: 80%;
-    max-width: 500px; /* Max width */
+    max-width: 600px; /* Max width */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
@@ -518,4 +518,38 @@ sup {
     
     z-index: 5; /* Below the player marker */
     transition: transform 0.5s ease-out; /* Smooth movement for the overlay */
+}
+/* --- MAP MODAL STYLES --- */
+
+/* We reuse the .modal style you already have */
+#map-modal {
+    display: none; /* Hidden by default */
+    z-index: 20; /* Make sure it's on top */
+}
+
+/* Make the map container fill the modal width */
+#map-modal #map-container {
+    width: 100%;
+    margin-bottom: 20px;
+    padding-bottom: 0;
+    border-bottom: none; 
+}
+
+/* Style for the new "Start Battle" button */
+#start-battle-btn {
+    background-color: #2ecc71; /* Green */
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 10px;
+    width: 100%;
+}
+
+#start-battle-btn:hover {
+    background-color: #27ae60;
 }
