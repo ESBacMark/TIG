@@ -75,11 +75,65 @@ function generateDistractors_Simple(correctAnswerTerm, correctNumericValue, vari
 }
 /** Distractor generator for COMPOUND answers */
 function generateDistractors_Compound(correctResult, variable) {
-    const {xCoeff, constant}=correctResult; let cA=''; if(xCoeff!==0)cA=formatTerm(xCoeff,variable,1); if(constant!==0)cA+=formatConstant(constant,xCoeff!==0); if(cA==="")cA="0";
-    let d=new Set(); d.add(cA); d.add(`${formatTerm(xCoeff+1,variable,1)}${formatConstant(constant,true)}`); d.add(`${formatTerm(xCoeff,variable,1)}${formatConstant(constant-1,true)}`); d.add(formatTerm(xCoeff+constant,variable,1)); d.add(formatConstant(xCoeff+constant,false)); d.add(`${formatTerm(xCoeff,variable,2)}${formatConstant(constant,true)}`);
-    let fO=Array.from(d).filter(opt=>opt!==''&&opt!==null); fO=Array.from(new Set(fO));
-    while(fO.length<4){ let rX=xCoeff+(Math.floor(Math.random()*3)-1); let rC=constant+(Math.floor(Math.random()*3)-1); let rO=`${formatTerm(rX,variable,1)}${formatConstant(rC,rX!==0)}`; if(rO==="")rO="x+y"; if(rO&&!fO.includes(rO))fO.push(rO); }
-    while(fO.length>4){ const i=Math.floor(Math.random()*fO.length); if(fO[i]!==cA)fO.splice(i,1); } while(fO.length<4)fO.push(`${fO.length}x+${fO.length}`); return fO.sort(()=>Math.random()-0.5);
+    const {xCoeff, constant}=correctResult;
+    let cA='';
+    if(xCoeff!==0) cA=formatTerm(xCoeff,variable,1);
+    if(constant!==0) cA+=formatConstant(constant, xCoeff!==0);
+    if(cA==="") cA="0";
+
+    let d=new Set();
+    d.add(cA);
+
+    // --- NEW LOGIC ---
+    // Check if the correct answer is just a constant
+    if (xCoeff === 0) {
+        // Correct answer is just a number (e.g., "3")
+        // We will add distractors that are clearly different.
+        d.add(formatConstant(constant + 1, false)); // "4"
+        d.add(formatConstant(constant - 1, false)); // "2"
+        d.add(formatTerm(1, variable, 1)); // "x"
+        if(constant !== 0) d.add(formatTerm(constant, variable, 1)); // "3x"
+        d.add(formatTerm(1, variable, 1) + formatConstant(constant, true)); // "x + 3"
+    } else {
+        // This is the original logic (for answers like "2x + 3")
+        d.add(`${formatTerm(xCoeff+1,variable,1)}${formatConstant(constant,true)}`);
+        d.add(`${formatTerm(xCoeff,variable,1)}${formatConstant(constant-1,true)}`);
+        d.add(formatTerm(xCoeff+constant,variable,1));
+        d.add(formatConstant(xCoeff+constant,false));
+        d.add(`${formatTerm(xCoeff,variable,2)}${formatConstant(constant,true)}`);
+    }
+    // --- END NEW LOGIC ---
+
+    let fO=Array.from(d).filter(opt=>opt!==''&&opt!==null);
+    fO=Array.from(new Set(fO));
+
+    // Fill-in logic
+    while(fO.length<4){
+        let rX = xCoeff+(Math.floor(Math.random()*3)-1);
+        let rC = constant+(Math.floor(Math.random()*3)-1);
+        
+        // If correct answer was just a constant, ensure fill-in distractors are not just +/- variations
+        if (xCoeff === 0 && rX === 0) {
+             if (rC === constant) rC++; // ensure it's not the correct answer
+             let rO = formatConstant(rC, false); // "4", "2", etc.
+             if(rO==="")rO="0";
+             if(rO && rO !== cA && !fO.includes(rO)) fO.push(rO);
+             continue; // go to next loop iteration
+        }
+        
+        let rO=`${formatTerm(rX,variable,1)}${formatConstant(rC,rX!==0)}`;
+        if(rO==="")rO="x+y"; // arbitrary fallback
+        if(rO&&!fO.includes(rO))fO.push(rO);
+    }
+    
+    // Trim logic
+    while(fO.length>4){
+        const i=Math.floor(Math.random()*fO.length);
+        if(fO[i]!==cA)fO.splice(i,1);
+    }
+    // Fallback fill
+    while(fO.length<4)fO.push(`${fO.length}x+${fO.length}`); 
+    return fO.sort(()=>Math.random()-0.5);
 }
 /** Distractor generator for MULTI VARIABLE answers */
 function generateDistractors_MultiVariable(correctResult, var1, var2) {
@@ -1784,14 +1838,10 @@ function generateQuestion(difficultyLevel, minAbsCoeff = 1, maxAbsCoeff = 10) {
             a = getRandomCoeff(true);
             n = getRandomExp(2, 4); // n >= 2
             b = getRandomCoeff(true);
-            m = getRandomExp(1, 3);
+            m = getRandomExp(2, 4);
+			p = getRandomExp(1, m - 1); // p will be 1 (if m=2) or 1-3 (if m=4)
             c = getRandomCoeff(true);
-            
-            // Ensure p is different from m
-            do {
-                p = getRandomExp(1, 3);
-            } while (m === p);
-            
+                        
             // Format question: ax^n(bx^m + cx^p)
             let aTerm = formatTerm(a, var1, n);
             let innerTerm = `${formatTerm(b, var1, m)}${formatTerm(c, var1, p, true)}`;
