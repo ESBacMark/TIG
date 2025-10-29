@@ -128,22 +128,6 @@ body {
     display: none;
 }
 
-#play-again-btn {
-    background-color: #2ecc71; /* Green for "Go" */
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 1.2em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    margin-top: 20px; /* Space it out */
-}
-
-#play-again-btn:hover {
-    background-color: #27ae60;
-}
 /* Main game container styling */
 #game-container {
     background-color: #34495e; /* Slightly lighter dark blue */
@@ -314,21 +298,6 @@ sup {
     font-size: 1em;
 }
 
-#jump-to-level-btn {
-    background-color: #3498db; /* Bright blue */
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 5px;
-    font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-#jump-to-level-btn:hover {
-    background-color: #2980b9;
-}
 /* --- LEVEL LIST MODAL STYLES --- */
 
 /* Style for the "View Levels" button */

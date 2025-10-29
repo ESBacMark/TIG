@@ -43,7 +43,6 @@ const mapBwOverlayElement = document.getElementById('map-bw-overlay');
 const mapViewportElement = document.getElementById('map-viewport'); // Reference to the map's container
 let currentQuestion = null;
 let questionStartTime = 0; // To store the timestamp when question appears
-const MAP_PROGRESS_UNIT_PX = 100; // How many pixels player moves forward with each "win"
 const MAP_PROGRESS_STEP_PX = 20; // Owl moves 20px per win
 const MAP_MAX_PROGRESS_PX = 800; // Define max progress before "new world" (e.g., 800px)
 // Player State
@@ -54,7 +53,6 @@ const player = {
     maxHealth: 100,
     currentDifficultyLevel: 1,
 	position: 15,
-	maxLevelConquered: 0,
 	mapProgress: 0
 };
 // --- ADD THESE NEW VARIABLES ---
@@ -244,7 +242,6 @@ function startNewGame() {
     player.health = 100;
     player.skillLevel = 1;
     player.position = 15;
-    player.maxLevelConquered = 0;
     player.mapProgress = 0;
     enemy.position = 15;
     isGameOver = false;
