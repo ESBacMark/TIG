@@ -28,12 +28,15 @@ const feedbackMessageElement = document.getElementById('feedback-message');
 const scoreDisplayElement = document.getElementById('score-display');
 const healthDisplayElement = document.getElementById('health-display');
 const levelSelectElement = document.getElementById('level-select'); // For Level Selector
-const jumpToLevelBtn = document.getElementById('jump-to-level-btn'); // For Level Selector
-const showLevelsBtn = document.getElementById('show-levels-btn'); // <-- ADD THIS
-const levelListModal = document.getElementById('level-list-modal'); // <-- ADD THIS
-const modalCloseBtn = document.querySelector('.modal-close-btn'); // <-- ADD THIS
-const levelListContent = document.getElementById('level-list-content'); // <-- ADD THIS
-
+const showLevelsBtn = document.getElementById('show-levels-btn'); // 
+const levelListModal = document.getElementById('level-list-modal'); // 
+const modalCloseBtn = document.querySelector('.modal-close-btn'); // 
+const levelListContent = document.getElementById('level-list-content'); //
+const playerCharacter = document.getElementById('player-character');
+const enemyCharacter = document.getElementById('enemy-character');
+const playerProjectile = document.getElementById('player-projectile');
+const enemyProjectile = document.getElementById('enemy-projectile');
+const playAgainBtn = document.getElementById('play-again-btn');
 let currentQuestion = null;
 let questionStartTime = 0; // To store the timestamp when question appears
 
@@ -43,15 +46,23 @@ const player = {
     health: 100,
     skillLevel: 1,
     maxHealth: 100,
-    currentDifficultyLevel: 1
+    currentDifficultyLevel: 1,
+	position: 15
 };
-
+// --- ADD THESE NEW VARIABLES ---
+const enemy = {
+    position: 15 // NEW: Enemy's 'right' position as a percentage
+};
+ 
+let isGameOver = false; // Flag to stop the game
+const KNOCKBACK_AMOUNT = 5; // How many percentage points to move
+const ANIMATION_DURATION = 300; // 300ms, matches your CSS
 // Game Settings
 const scorePerCorrect = 10;
 const healthLossPerIncorrect = 20;
 const FAST_THRESHOLD_MS = 3000; // Time limit for "Fast" answer in milliseconds
 const MAX_IMPLEMENTED_LEVEL = 63; // The highest level we have implemented
-// --- LEVEL DESCRIPTIONS ---
+
 // --- LEVEL DESCRIPTIONS ---
 const LEVEL_DESCRIPTIONS = [
     "1-12: Combining Like Terms<br>ax + bx",
@@ -78,6 +89,132 @@ const LEVEL_DESCRIPTIONS = [
     "60-61: Factoring<br> (ax<sup>2</sup> &pm;2abx+b<sup>2</sup>) / (x &pm; 1/b)",
     "62-63: Factoring<br>n(ax+b)(cx+d) /(ex+f)"
 ];
+/** Triggers the shooting animation */
+function triggerShoot(shooterType, text) {
+    let projectile;
+    let animationClass;
+ 
+    if (shooterType === 'player') {
+        projectile = playerProjectile;
+        animationClass = 'shoot-right';
+        
+        // --- NEW: Set dynamic start position ---
+        projectile.style.left = `calc(${player.position}% + 60px)`;
+        projectile.style.right = 'auto'; // Clear old 'right' style
+        
+    } else { // 'enemy'
+        projectile = enemyProjectile;
+        animationClass = 'shoot-left';
+        
+        // --- NEW: Set dynamic start position ---
+        projectile.style.right = `calc(${enemy.position}% + 60px)`;
+        projectile.style.left = 'auto'; // Clear old 'left' style
+    }
+ 
+    projectile.innerHTML = text;
+    projectile.style.opacity = 1;
+    projectile.classList.add(animationClass);
+ 
+    // Hide projectile after animation is done
+    setTimeout(() => {
+        projectile.style.opacity = 0;
+        projectile.classList.remove(animationClass);
+        projectile.innerHTML = '';
+        
+        // --- NEW: Reset inline styles for next shot ---
+        projectile.style.left = 'auto';
+        projectile.style.right = 'auto';
+        
+    }, ANIMATION_DURATION);
+}
+/** Handles knockback, position update, and the "jump" visual */
+function applyKnockback(target) {
+    if (isGameOver) return; // Don't apply knockback if game just ended
+ 
+    let targetChar;
+ 
+    if (target === 'player') {
+        // --- THIS IS THE FIX ---
+        // We must SUBTRACT to decrease the 'left' % and move left
+        player.position -= KNOCKBACK_AMOUNT; 
+        
+        playerCharacter.style.left = `${player.position}%`;
+        targetChar = playerCharacter;
+    } else { // 'enemy'
+        enemy.position -= KNOCKBACK_AMOUNT; // Reducing 'right' moves it right
+        enemyCharacter.style.right = `${enemy.position}%`;
+        targetChar = enemyCharacter;
+    }
+    
+    // Add the "jump" visual
+    targetChar.style.transform = 'translateY(-10px)';
+    setTimeout(() => {
+        targetChar.style.transform = 'translateY(0)';
+    }, 150); // A quick 150ms hop
+ 
+    // After knockback, check if the game is over
+    checkPositionalGameOver();
+}
+ 
+/** Checks if either character is off-screen */
+function checkPositionalGameOver() {
+    if (isGameOver) return; // Don't run if game is already over
+ 
+    if (player.position < -5) { // Player is off the left edge
+        isGameOver = true;
+        triggerGameOver(false); // Player loses
+    } else if (enemy.position < -5) { // Enemy is off the right edge
+        isGameOver = true;
+        triggerGameOver(true); // Player wins
+    }
+}
+ 
+/** Replaces your old gameOver() function */
+function triggerGameOver(playerWins) {
+    // Disable all option buttons
+    Array.from(optionsContainerElement.children).forEach(button => {
+        button.disabled = true;
+    });
+ 
+    if (playerWins) {
+        feedbackMessageElement.innerHTML = `You Win! Final score: ${player.score}`;
+        feedbackMessageElement.style.color = '#2ecc71';
+        questionTextElement.innerHTML = "Victory!";
+        enemyCharacter.style.opacity = 0; // Fade out enemy
+    } else {
+        feedbackMessageElement.innerHTML = `Game Over! Final score: ${player.score}`;
+        feedbackMessageElement.style.color = 'white';
+        questionTextElement.innerHTML = "Defeated!";
+        playerCharacter.style.opacity = 0; // Fade out player
+    }
+	playAgainBtn.classList.remove('hidden'); // Show the button
+}
+/** Resets the entire game to its initial state */
+function resetGame() {
+    // Reset game state
+    player.score = 0;
+    player.health = 100;
+    player.skillLevel = 1;
+    player.position = 15;
+    enemy.position = 15;
+    isGameOver = false;
+
+    // Reset UI
+    playAgainBtn.classList.add('hidden');
+    feedbackMessageElement.innerHTML = '';
+    
+    // Reset character visuals (position and opacity)
+    playerCharacter.style.left = '15%';
+    playerCharacter.style.opacity = 1;
+    enemyCharacter.style.right = '15%';
+    enemyCharacter.style.opacity = 1;
+
+    // Update displays
+    updatePlayerStatsDisplay();
+    
+    // Start the game
+    displayNewQuestion();
+}
 /** Updates player stats display */
 function updatePlayerStatsDisplay() {
     scoreDisplayElement.textContent = `Score: ${player.score}`;
@@ -172,12 +309,9 @@ function adjustDifficulty() {
     return { minCoeff, maxCoeff };
 }
 
-/** Handles game over */
+// Delete your old gameOver() function and replace it with this:
 function gameOver() {
-    feedbackMessageElement.innerHTML = `Game Over! Final score: ${player.score}`;
-    feedbackMessageElement.style.color = 'white';
-    questionTextElement.innerHTML = "Thank you!";
-    optionsContainerElement.innerHTML = '';
+    triggerGameOver(false); // A health-based loss
 }
 
 /** Displays a new question */
@@ -189,7 +323,10 @@ function displayNewQuestion() {
     console.log("Adjusting difficulty...");
     const { minCoeff, maxCoeff } = adjustDifficulty();
     let currentMaxLevel = player.currentDifficultyLevel;
-
+	if (isGameOver || player.health <= 0) { 
+        if (player.health <= 0) gameOver(); // Trigger health-based loss
+        return; 
+    }
     // Sync the dropdown menu
     if (levelSelectElement) { // Check if it exists first
         levelSelectElement.value = currentMaxLevel;
@@ -259,21 +396,26 @@ function logAnswerToDatabase(isCorrect, level, responseTimeMs) {
             console.error("Error logging answer: ", error);
         });
 }
-
 /** Handles user's answer selection */
 function handleAnswer(clickedButton, selectedOption) {
-    if (!currentQuestion || player.health <= 0) return;
-    const responseTime = performance.now() - questionStartTime;
+    // This line checks all flags
+    if (!currentQuestion || isGameOver || player.health <= 0) return;
+
+    // THIS IS THE ONLY DECLARATION
+    const responseTime = performance.now() - questionStartTime; 
+
     console.log(`Response time: ${(responseTime / 1000).toFixed(2)}s`);
     Array.from(optionsContainerElement.children).forEach(button => {
         button.disabled = true;
     });
+
     let skillChange = 0;
     if (selectedOption === currentQuestion.correctAnswer) {
         feedbackMessageElement.innerHTML = "Correct!";
         feedbackMessageElement.style.color = 'green';
         clickedButton.classList.add('correct');
         player.score += scorePerCorrect;
+
         if (responseTime <= FAST_THRESHOLD_MS) {
             skillChange = 2;
             feedbackMessageElement.innerHTML += " (Fast!)";
@@ -283,29 +425,52 @@ function handleAnswer(clickedButton, selectedOption) {
             console.log("Slow correct answer.");
         }
         player.skillLevel += skillChange;
-		logAnswerToDatabase(true, player.currentDifficultyLevel, responseTime);
+        logAnswerToDatabase(true, player.currentDifficultyLevel, responseTime);
         console.log(`Correct! Score: ${player.score}, Skill: ${player.skillLevel} (+${skillChange})`);
+
+        // --- BATTLE LOGIC ---
+        triggerShoot('player', currentQuestion.correctAnswer);
+        setTimeout(() => {
+            applyKnockback('enemy');
+        }, ANIMATION_DURATION);
+        // --- END BATTLE LOGIC ---
+
     } else {
         feedbackMessageElement.innerHTML = `Wrong! Correct: ${currentQuestion.correctAnswer}`;
         feedbackMessageElement.style.color = 'red';
         clickedButton.classList.add('incorrect');
-        player.health -= healthLossPerIncorrect;
+        player.health -= healthLossPerIncorrect; // Keep health loss!
         skillChange = -1;
+
         if (player.skillLevel > 1) {
             player.skillLevel = Math.max(1, Math.floor(player.skillLevel + skillChange));
         } else {
             skillChange = 0;
         }
+		
+        // This was missing from my previous instructions, good thing we're replacing the whole function!
+        logAnswerToDatabase(false, player.currentDifficultyLevel, responseTime); 
+		
         console.log(`Wrong! Health: ${player.health}, Skill: ${player.skillLevel} (${skillChange})`);
         Array.from(optionsContainerElement.children).forEach(button => {
             if (button.innerHTML === currentQuestion.correctAnswer) button.classList.add('correct');
         });
+        
+        // --- BATTLE LOGIC ---
+        triggerShoot('enemy', selectedOption); // Use the wrong answer they selected
+        setTimeout(() => {
+            applyKnockback('player');
+        }, ANIMATION_DURATION);
+        // --- END BATTLE LOGIC ---
     }
+
     updatePlayerStatsDisplay();
-    if (player.health > 0) {
+
+    // --- NEW GAME OVER CHECK ---
+    if (!isGameOver && player.health > 0) {
         setTimeout(displayNewQuestion, 400);
-    } else {
-        gameOver();
+    } else if (player.health <= 0) {
+        gameOver(); // Trigger health-based game over
     }
 }
 
@@ -332,17 +497,6 @@ function handleLevelJump() {
     setDifficultyLevel(selectedLevel);
 }
 
-// Add event listener
-if (jumpToLevelBtn) {
-    jumpToLevelBtn.addEventListener('click', handleLevelJump);
-}
-
-
-// --- INITIALIZATION ---
-updatePlayerStatsDisplay();
-console.log("Initial call to displayNewQuestion.");
-populateLevelSelector(); // Fill the dropdown
-displayNewQuestion();
 
 // --- DEBUG FUNCTIONS ---
 function setSkillLevel(level) {
@@ -427,9 +581,12 @@ window.addEventListener('click', (event) => {
 updatePlayerStatsDisplay();
 console.log("Initial call to displayNewQuestion.");
 populateLevelSelector(); // Fill the dropdown
-populateLevelList(); // <-- ADD THIS LINE
+populateLevelList(); // 
 displayNewQuestion();
-
+playAgainBtn.addEventListener('click', resetGame);
+levelSelectElement.addEventListener('change', handleLevelJump);
+resetGame();
 // ... (your setDifficultyLevel function) ...
+
 
 

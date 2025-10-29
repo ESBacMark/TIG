@@ -13,7 +13,137 @@ body {
     padding: 20px;
     box-sizing: border-box; /* Include padding in element's total width and height */
 }
+/* --- BATTLE ZONE STYLES --- */
 
+#battle-zone {
+    height: 100px;
+    background-color: #2c3e50; /* Darker background for the zone */
+    border: 2px solid #a2d2ff;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    position: relative; /* Essential for positioning children absolutely */
+    overflow: hidden; /* Characters will slide out of this */
+    display: block; /* Explicitly set display type */
+}
+
+
+#middle-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    border-left: 3px dashed #a2d2ff; /* Dotted line style */
+    transform: translateX(-1.5px); /* Center the line exactly */
+}
+
+
+
+#player-character, #enemy-character {
+    width: 90px;  /* --- ADJUST SIZE --- */
+    height: 90px; /* --- ADJUST SIZE --- */
+    position: absolute; 
+    transition: left 0.3s ease-out, right 0.3s ease-out, transform 0.15s ease-in-out, opacity 0.3s ease;
+
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#player-character {
+    background-image: url('player.png'); 
+    left: 15%; 
+}
+
+#enemy-character {
+    background-image: url('enemy.png'); 
+    right: 15%; 
+}
+/* --- END BATTLE ZONE STYLES --- */
+
+/* Projectile Styles */
+.projectile {
+    position: absolute;
+    top: 35px; /* Adjust vertical position */
+    opacity: 0; /* Hidden by default */
+    
+    /* NEW TEXT STYLES */
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.5em;
+    font-weight: bold;
+    white-space: nowrap; /* Keep answer on one line */
+    border: 2px solid;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+#player-projectile {
+    /* Player's projectile (Correct Answer) */
+    background-color: #e0f7fa; /* Light cyan */
+    color: #00796b; /* Dark green/cyan text */
+    border-color: #26a69a;
+  
+}
+
+#enemy-projectile {
+    /* Enemy's projectile (Wrong Answer) */
+    background-color: #ffebee; /* Light red */
+    color: #c62828; /* Dark red text */
+    border-color: #e57373;
+   
+}
+
+/* Animation classes to be added by JS */
+.shoot-right {
+    animation: shoot-right 0.3s ease-in forwards;
+}
+.shoot-left {
+    animation: shoot-left 0.3s ease-in forwards;
+}
+/* --- KEYFRAME ANIMATIONS --- */
+
+@keyframes shoot-right {
+    from {
+        opacity: 1;
+        /* 'left' property will be set by JS */
+    }
+    to {
+        opacity: 1;
+        left: calc(85% - 80px); 
+    }
+}
+
+@keyframes shoot-left {
+    from {
+        opacity: 1;
+        /* 'right' property will be set by JS */
+    }
+    to {
+        opacity: 1;
+        right: calc(85% - 80px);
+    }
+}
+/* --- PLAY AGAIN STYLES --- */
+
+.hidden {
+    display: none;
+}
+
+#play-again-btn {
+    background-color: #2ecc71; /* Green for "Go" */
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 20px; /* Space it out */
+}
+
+#play-again-btn:hover {
+    background-color: #27ae60;
+}
 /* Main game container styling */
 #game-container {
     background-color: #34495e; /* Slightly lighter dark blue */

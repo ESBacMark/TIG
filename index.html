@@ -10,12 +10,17 @@
 	<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <div id="game-container">
-
+		<div id="battle-zone">
+            <div id="player-character"></div>
+            <div class="projectile" id="player-projectile"></div>
+            <div class="projectile" id="enemy-projectile"></div>
+			<div id="middle-line"></div> 
+            <div id="enemy-character"></div>
+        </div>
         <div id="level-selector-container">
             <label for="level-select">Choose Level:</label>
             <select id="level-select"></select>
-            <button id="jump-to-level-btn">Go</button>
-			<button id="show-levels-btn">View Levels</button>
+            <button id="show-levels-btn">View Levels</button>
         </div>
         <div id="player-stats">
             <span id="score-display">Score: 0</span> | <span id="health-display">Health: 100%</span>
@@ -26,6 +31,9 @@
         </div>
        
         <p id="feedback-message"></p>
+		        
+        <button id="play-again-btn" class="hidden">Play Again</button>
+    </div>
     </div>
     <div id="level-list-modal" class="modal">
     <div class="modal-content">
