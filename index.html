@@ -1,59 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIG</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-	<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <div id="game-container">
-		
-		<div id="battle-zone">
-            <div id="player-character"></div>
-            <div class="projectile" id="player-projectile"></div>
-            <div class="projectile" id="enemy-projectile"></div>
-			<div id="middle-line"></div> 
-            <div id="enemy-character"></div>
-        </div>
-        <div id="level-selector-container">
-            <label for="level-select">Choose Level:</label>
-            <select id="level-select"></select>
-            <button id="show-levels-btn">View Levels</button>
-        </div>
-        <div id="player-stats">
-            <span id="score-display">Score: 0</span> | <span id="health-display">Health: 100%</span>
-        </div>
-
-        <p id="question-text">Loading question...</p>
-        <div id="options-container"></div>
-		<p id="feedback-message"></p>
-    </div>
- 	
-	<div id="map-modal" class="modal">
-    <div class="modal-content">
-        <div id="map-container">
-            <div id="map-label">World Progression</div>
-            <div id="map-viewport">
-                <div id="map-player-marker"></div>
-                <div id="map-bw-overlay"></div>
-            </div>
-        </div>
-
-        <button id="start-battle-btn">Start Battle</button>
-    </div>
-</div>
-    <div id="level-list-modal" class="modal">
-    <div class="modal-content">
-        <span class="modal-close-btn">&times;</span>
-        <h2>Level List & Skills</h2>
-        <div id="level-list-content">
-            </div>
-    </div>
-</div>
-    <script src="questionGenerator.js" defer></script>
-    <script src="app.js" defer></script>
-</body>
+<!DOCTYPE HTML>
+<html lang="en-US">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="refresh" content="0; url=https://thinkin.co/games">
+        <script type="text/javascript">
+            window.location.href = "https://thinkin.co/games";
+        </script>
+        <title>Redirecting to Thinkin.co</title>
+    </head>
+    <body>
+        If you are not redirected automatically, follow this <a href='https://thinkin.co/games'>link to the game on Thinkin.co</a>.
+    </body>
 </html>
